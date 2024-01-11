@@ -2,7 +2,6 @@
 import os, rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
-
 def main():
     monitor= Basic()
     monitor.process()
@@ -17,11 +16,11 @@ class Basic():
 
     def monitor_callback(self):
         os.system('clear')
-        print( "Pulse Monitor: " + Basic.running[self._i] )
+        print( "Pulse Monitor: ")
         self._i= (self._i+1)%Basic.runlen
         for p in self._pulses :
             pulse_str= ""
-            for i in range(len(p), 16) :
+            for i in range(len(p), 12) :
                 pulse_str+= " "
             pulse_str+= p + ": "
             
@@ -29,7 +28,11 @@ class Basic():
             for i in range(self._pulses[p][1]) :
                 pulse_str+= "⦁"
             print( pulse_str )
-        
+        print( Basic.running[self._i] )
+        print( "" )
+        print( "" )
+        print( "" )
+ 
     def pulse_callback(self, msg):
         pulse= msg.data.split(": ")
         if pulse[0] in self._pulses :
