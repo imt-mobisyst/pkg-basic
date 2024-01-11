@@ -16,7 +16,7 @@ class Basic():
 
     def process(self):
         # Ros initialization
-        rclpy.init(domain_id= 00)
+        rclpy.init(domain_id= 100)
         node = Node( f"parasite_{socket.gethostname()}" )
         self.pulse_publisher= node.create_publisher( String, 'pulse', 10 )
         self._timer = node.create_timer( 1, self.pulse_callback )
