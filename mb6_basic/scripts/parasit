@@ -11,9 +11,7 @@ class Basic():
     def pulse_callback(self):
         hostname= socket.gethostname()
         pulse_msg= String()
-        pulse_msg.data= f"parasit: {hostname}"
-        for ip in ipAddr() :
-            pulse_msg.data+= f" - {ip}"
+        pulse_msg.data= f"parasit {hostname}: " + " - ".join( ipAddr() )
         self.pulse_publisher.publish( pulse_msg )
 
     def process(self):
