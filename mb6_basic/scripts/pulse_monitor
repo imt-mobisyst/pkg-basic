@@ -16,7 +16,7 @@ class Basic():
 
     def monitor_callback(self):
         os.system('clear')
-        print( "Pulse Monitor: ")
+        print( Basic.running[self._i]+" Pulse Monitor: ")
         self._i= (self._i+1)%Basic.runlen
         for p in self._pulses :
             pulse_str= ""
@@ -24,22 +24,21 @@ class Basic():
                 pulse_str+= " "
             pulse_str+= p + ": "
             
-            pulse_str+= self._pulses[p][0] + " "
-            for i in range(self._pulses[p][1]) :
-                pulse_str+= "⦁"
+            pulse_str+= self._pulses[p][0] + " " + self._pulses[p][1]
+            if self._i%3 == 0 :
+                self._pulses[p][1]= self._pulses[p][1][1:] + "–"
+
             print( pulse_str )
-        print( Basic.running[self._i] )
-        print( "" )
-        print( "" )
-        print( "" )
- 
+        
     def pulse_callback(self, msg):
         pulse= msg.data.split(": ")
-        if pulse[0] in self._pulses :
-            self._pulses[ pulse[0] ][0]= pulse[1]
-            self._pulses[ pulse[0] ][1]= (self._pulses[ pulse[0] ][1]+1)%4
+        organism= pulse[0]
+        status= pulse[1]
+        if organism in self._pulses :
+            self._pulses[organism][0]= status
+            self._pulses[organism][1]= self._pulses[organism][1][:-1]+"⥍"
         else :
-            self._pulses[ pulse[0] ]= [ pulse[1], 0]
+            self._pulses[organism]= [ status, "––––––––⥍"]
 
     def process(self):
         # Ros initialization

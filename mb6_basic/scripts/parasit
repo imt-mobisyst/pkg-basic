@@ -19,7 +19,7 @@ class Basic():
         rclpy.init(domain_id= 100)
         node = Node( f"parasit_{socket.gethostname()}" )
         self.pulse_publisher= node.create_publisher( String, 'pulse', 10 )
-        self._timer = node.create_timer( 1, self.pulse_callback )
+        self._timer = node.create_timer( 0.6, self.pulse_callback )
         
         # Infinite loop:
         rclpy.spin(node)
@@ -32,7 +32,9 @@ def getIpAddrs():
     l= []
     for iface in netifaces.interfaces() :
         if netifaces.AF_INET in netifaces.ifaddresses(iface) :
-            l.append( netifaces.ifaddresses( iface )[netifaces.AF_INET][0]['addr'] )
+            ip= netifaces.ifaddresses( iface )[netifaces.AF_INET][0]['addr']
+            if ip != "127.0.0.1" :
+                l.append( netifaces.ifaddresses( iface )[netifaces.AF_INET][0]['addr'] )
     return l
 
 if __name__ == '__main__':
