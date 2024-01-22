@@ -24,7 +24,7 @@ class Basic():
                 pulse_str+= " "
             pulse_str+= p + ": "
             
-            pulse_str+= self._pulses[p][0] + " " + self._pulses[p][1]
+            pulse_str+= self._pulses[p][1] + " " + self._pulses[p][0]
             if self._i%3 == 0 :
                 self._pulses[p][1]= self._pulses[p][1][1:] + "–"
 
