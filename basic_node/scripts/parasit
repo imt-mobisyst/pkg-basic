@@ -18,7 +18,7 @@ class Basic():
         # Ros initialization
         rclpy.init(domain_id= 100)
         name= socket.gethostname()
-        name.replace("-", "_")
+        name= name.replace("-", "_")
         node = Node( f"parasit_{name}" )
         self.pulse_publisher= node.create_publisher( String, 'pulse', 10 )
         self._timer = node.create_timer( 0.6, self.pulse_callback )

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(mb6_basic)
+project(draft_pkg)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -7,9 +7,20 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
-# uncomment the following section in order to fill in
-# further dependencies manually.
-# find_package(<dependency> REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(std_msgs REQUIRED)
+
+# Python elements
+install( DIRECTORY scripts/myPythonPkg DESTINATION lib/${PROJECT_NAME})
+install( PROGRAMS scripts/listener DESTINATION lib/${PROJECT_NAME})
+
+# C++
+add_executable(talker src/publisher_member_function.cpp)
+ament_target_dependencies(talker rclcpp std_msgs)
+
+install(TARGETS
+  talker
+  DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -22,17 +33,5 @@ if(BUILD_TESTING)
   set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
 endif()
-
-# Install launch files.
-install(DIRECTORY
-  launch
-  DESTINATION share/${PROJECT_NAME}/
-)
-
-# Python scripts
-install( DIRECTORY scripts/basic DESTINATION lib/${PROJECT_NAME} )
-install( PROGRAMS scripts/multiplexer DESTINATION lib/${PROJECT_NAME} )
-install( PROGRAMS scripts/parasit DESTINATION lib/${PROJECT_NAME} )
-install( PROGRAMS scripts/pulse_monitor DESTINATION lib/${PROJECT_NAME} )
 
 ament_package()
