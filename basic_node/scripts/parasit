@@ -1,17 +1,22 @@
 #!/usr/bin/python3
 import socket, netifaces, rclpy
 from rclpy.node import Node
-from std_msgs.msg import String
+from basic_msgs.msg import Pulse
 
 def main():
     parasit= Basic()
     parasit.process()
 
 class Basic():
+    def get_stamp(self):
+        return self._node.get_clock().now().to_msg()
+    
     def pulse_callback(self):
         hostname= socket.gethostname()
-        pulse_msg= String()
-        pulse_msg.data= f"{hostname}: " + " - ".join( getIpAddrs() )
+        pulse_msg= Pulse()
+        pulse_msg.stamp= self.get_stamp()
+        pulse_msg.system_name= hostname
+        pulse_msg.description= " - ".join( getIpAddrs() )
         self.pulse_publisher.publish( pulse_msg )
 
     def process(self):
@@ -19,15 +24,15 @@ class Basic():
         rclpy.init(domain_id= 100)
         name= socket.gethostname()
         name= name.replace("-", "_")
-        node = Node( f"parasit_{name}" )
-        self.pulse_publisher= node.create_publisher( String, 'pulse', 10 )
-        self._timer = node.create_timer( 0.6, self.pulse_callback )
+        self._node = Node( f"parasit_{name}" )
+        self.pulse_publisher= self._node.create_publisher( Pulse, 'pulse', 10 )
+        self._timer = self._node.create_timer( 0.6, self.pulse_callback )
         
         # Infinite loop:
-        rclpy.spin(node)
+        rclpy.spin(self._node)
 
         # Clean stop:
-        node.destroy_node()
+        self._node.destroy_node()
         rclpy.shutdown()
 
 def getIpAddrs():
