@@ -31,12 +31,13 @@ class Basic():
             if self._i%3 == 0 :
                 self._pulses[p][1]= self._pulses[p][1][1:] + "–"
 
-            pulse_str+= f"    ({self._pulses[p][2]} ms)"
-            print( pulse_str )
+            synchro= self._pulses[p][2]
+            pulse_str+= f"    ({synchro} μs)"
+            print(pulse_str)
         
     def pulse_callback(self, pulse_msg):
         time= self.get_stamp()
-        delta= (time.sec - pulse_msg.stamp.sec) * 1000 + (time.nanosec - pulse_msg.stamp.nanosec) // 10000
+        delta= (time.sec - pulse_msg.stamp.sec) * 1000 + (time.nanosec - pulse_msg.stamp.nanosec) // 1000
         organism= pulse_msg.system_name
         status= pulse_msg.description
         if organism in self._pulses :
