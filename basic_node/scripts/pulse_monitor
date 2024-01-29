@@ -6,6 +6,32 @@ def main():
     monitor= Basic()
     monitor.process()
 
+def fixRightStr( aStr, aSize, sep=" " ):
+    fix= ""
+    for i in range(len(aStr), aSize) :
+        fix+= sep
+    return fix+ aStr
+
+def fixLeftStr( aStr, aSize, sep=" " ):
+    fix= ""
+    for i in range(len(aStr), aSize) :
+        fix+= sep
+    return aStr + fix
+
+class Parasit():
+    def __init__(self, status, deltaStamp) -> None:
+        self._pulse= "––––––––⥍"
+        self._status= status
+        self._time= deltaStamp
+
+    def update(self, status, deltaStamp) -> None:
+        self._pulse= self._pulse[1:] + "⥍"
+        self._status= status
+        self._time= (int)(0.8*self._time + 0.2*deltaStamp)
+
+    def step(self):
+        self._pulse=  self._pulse[1:] + "–"
+
 class Basic():
     running= [ " ", " ", "▖", "▖", "▌", "▛", "█", "▜", "▐", "▐", "▗", "▗" ]
     runlen= len( running )
@@ -21,31 +47,30 @@ class Basic():
         os.system('clear')
         print( Basic.running[self._i]+" Pulse Monitor: ")
         self._i= (self._i+1)%Basic.runlen
-        for p in self._pulses :
-            pulse_str= ""
-            for i in range(len(p), 12) :
-                pulse_str+= " "
-            pulse_str+= p + ": "
-            
-            pulse_str+= self._pulses[p][1] + "    " + self._pulses[p][0]
-            if self._i%3 == 0 :
-                self._pulses[p][1]= self._pulses[p][1][1:] + "–"
+        for name in self._pulses :
+            pulse= self._pulses[name]
+            pulse_str= fixRightStr( name, 14 )
+            pulse_str+= ": "
+            pulse_str+= pulse._pulse + " " 
+            pulse_str+= fixLeftStr( pulse._status+" ", 36, "." )
 
-            synchro= self._pulses[p][2]
-            pulse_str+= f"    ({synchro} μs)"
+            synchro= pulse._time
+            pulse_str+= fixRightStr( f" ({synchro} ms)", 16, "." )
             print(pulse_str)
+            
+            # animate pulse:
+            if self._i%3 == 0 :
+                pulse.step()
         
     def pulse_callback(self, pulse_msg):
         time= self.get_stamp()
-        delta= (time.sec - pulse_msg.stamp.sec) * 1000 + (time.nanosec - pulse_msg.stamp.nanosec) // 1000
+        delta= (time.sec - pulse_msg.stamp.sec) * 1000 + (time.nanosec - pulse_msg.stamp.nanosec) // 1000000
         organism= pulse_msg.system_name
         status= pulse_msg.description
         if organism in self._pulses :
-            self._pulses[organism][0]= status
-            self._pulses[organism][1]= self._pulses[organism][1][:-1]+"⥍"
-            self._pulses[organism][2]= (int)(0.8*self._pulses[organism][2] + 0.2*delta)
+            self._pulses[organism].update( status, delta )
         else :
-            self._pulses[organism]= [ status, "––––––––⥍", delta]
+            self._pulses[organism]= Parasit( status, delta )
 
     def process(self):
         # Ros initialization
