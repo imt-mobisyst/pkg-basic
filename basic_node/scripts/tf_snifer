@@ -34,6 +34,7 @@ class Basic():
         nowRosTime= self._node.get_clock().now()
         timeSec= nowRosTime.nanoseconds*0.000000001
         self.testTransformTo( 'laser', timeSec )
+        self.testTransformTo( 'truc', timeSec )
 
     def testTransformTo( self, frame, time ):
         # Get Transformation
@@ -50,7 +51,7 @@ class Basic():
                 print( f"tf: map -> {frame} : {  round(transTime, 2) } vs { round(time, 2)} ({ round( abs(transTime - time), 2 ) })" )
             #print( f"tf: map -> {frame} : {stampedTransform}" )
         except tf2_ros.TransformException as transEx:
-            print( f"tf: map -> {frame} : IMPOSBLE {transEx})" )
+            print( f"tf: map -> {frame} : IMPOSBLE\n\t > {transEx}" )
 
 if __name__ == '__main__':
     main()
