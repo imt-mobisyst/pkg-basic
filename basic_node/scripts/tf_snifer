@@ -1,0 +1,56 @@
+#!/usr/bin/python3
+import os, rclpy, tf2_ros
+from rclpy.node import Node
+from basic_msgs.msg import Pulse
+
+def main():
+    parasit= Basic()
+    parasit.process()
+
+class Basic():
+
+    def __init__(self):
+        self._node= None
+    
+    def process(self):
+        # Ros initialization
+        rclpy.init()
+        self._node = Node( f"tf_snifer" )
+        self._timer = self._node.create_timer( 0.2, self.routine )
+        
+        # Transform tool:
+        self.tf_buffer = tf2_ros.Buffer()
+        self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self._node)
+
+        # Infinite loop:
+        rclpy.spin(self._node)
+
+        # Clean stop:
+        self._node.destroy_node()
+        rclpy.shutdown()
+
+    def routine(self):
+        os.system('clear')
+        nowRosTime= self._node.get_clock().now()
+        timeSec= nowRosTime.nanoseconds*0.000000001
+        self.testTransformTo( 'laser', timeSec )
+
+    def testTransformTo( self, frame, time ):
+        # Get Transformation
+        try:
+            stampedTransform= self.tf_buffer.lookup_transform(
+                        frame,
+                        'map',
+                        rclpy.time.Time() )
+            
+            transTime= stampedTransform.header.stamp.sec + stampedTransform.header.stamp.nanosec*0.000000001
+            if transTime == 0.0 :
+                print( f"tf: map -> {frame} : STATIC" )
+            else:
+                print( f"tf: map -> {frame} : {  round(transTime, 2) } vs { round(time, 2)} ({ round( abs(transTime - time), 2 ) })" )
+            #print( f"tf: map -> {frame} : {stampedTransform}" )
+        except tf2_ros.TransformException as transEx:
+            print( f"tf: map -> {frame} : IMPOSBLE {transEx})" )
+
+if __name__ == '__main__':
+    main()

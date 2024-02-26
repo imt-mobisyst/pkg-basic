@@ -34,5 +34,6 @@ install( DIRECTORY scripts/basic DESTINATION lib/${PROJECT_NAME} )
 install( PROGRAMS scripts/multiplexer DESTINATION lib/${PROJECT_NAME} )
 install( PROGRAMS scripts/parasit DESTINATION lib/${PROJECT_NAME} )
 install( PROGRAMS scripts/pulse_monitor DESTINATION lib/${PROJECT_NAME} )
+install( PROGRAMS scripts/tf_snifer DESTINATION lib/${PROJECT_NAME} )
 
 ament_package()
