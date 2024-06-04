@@ -1,0 +1,25 @@
+#!/usr/bin/python3
+import os, sys, rclpy, random
+from rclpy.node import Node
+from std_msgs.msg import String
+
+def send( target_id, topic, colorMsg ):
+    # Ros initialization
+    rclpy.init( domain_id= target_id )
+    node = Node( f"color_publisher" )
+    pub= node.create_publisher(String, topic, 10)
+
+    # Infinite loop:
+
+    msg= String()
+    msg.data= colorMsg
+    pub.publish(msg)
+
+    rclpy.spin_once( node, timeout_sec=0.001 )
+
+    # Clean stop:
+    node.destroy_node()
+    rclpy.shutdown()
+
+if __name__ == '__main__':
+    send( int(sys.argv[1]), 'color/status', sys.argv[2] )
