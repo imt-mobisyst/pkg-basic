@@ -1,0 +1,17 @@
+launch:
+
+# Vizualization:
+- node: 
+    pkg: rviz2
+    exec: rviz2
+    args: "`ros2 pkg prefix basic_node`/share/basic_node/rviz/color-race.rviz"
+#    args: "$(find basic_node)/rviz/color-race.rviz"
+
+# Scenario:
+- node:
+    pkg: "basic_node"
+    exec: "color_race"
+
+# Control:
+- executable:
+    cmd: gnome-terminal --tab -e 'ros2 run teleop_twist_keyboard teleop_twist_keyboard cmd_vel:=/multi/cmd_teleop'

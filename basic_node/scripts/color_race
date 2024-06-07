@@ -5,21 +5,21 @@ from std_msgs.msg import String, ColorRGBA
 from visualization_msgs.msg import Marker
 
 colorPanel={
-    "blue":ColorRGBA(), "red":ColorRGBA(), "green":ColorRGBA(), "yellow":ColorRGBA()
+    "gray":ColorRGBA(),"blue":ColorRGBA(), "red":ColorRGBA(), "green":ColorRGBA(), "yellow":ColorRGBA()
 }
 
+colorPanel["gray"].r=0.6
+colorPanel["gray"].g=0.6
+colorPanel["gray"].b=0.6
+
 colorPanel["blue"].b=1.0
-colorPanel["blue"].a=1.0
 
 colorPanel["red"].r=1.0
-colorPanel["red"].a=1.0
 
 colorPanel["green"].g=1.0
-colorPanel["green"].a=1.0
 
 colorPanel["yellow"].r=1.0
 colorPanel["yellow"].g=1.0
-colorPanel["yellow"].a=1.0
 
 def main():
     cman= ColorManager()
@@ -30,8 +30,37 @@ class ColorManager():
         self._colors= colors
         self._counter= 0
         self._target= random.choice( self._colors )
+        # Robot Marker colored with target color
+        self._robotMarker= Marker()
+        self._robotMarker.header.frame_id= "base_link" 
+        self._robotMarker.ns= "color"           # Namespace (Object ID group)
+        self._robotMarker.id= 0                 # Object ID
+        self._robotMarker.type= 3               #CYLINDER type Id.
+        self._robotMarker.pose.position.z= 0.06
+        self._robotMarker.scale.x= 0.4
+        self._robotMarker.scale.y= 0.4
+        self._robotMarker.scale.z= 0.1
+        # Marker for the area color
+        self._areaMarker= Marker()
+        self._areaMarker.header.frame_id= "base_link" 
+        self._areaMarker.ns= "color"           # Namespace (Object ID group)
+        self._areaMarker.id= 1                 # Object ID
+        self._areaMarker.type= 3               #CYLINDER type Id.
+        self._areaMarker.scale.x= 0.6
+        self._areaMarker.scale.y= 0.6
+        self._areaMarker.scale.z= 0.001
         print( f"> target: {self._target} ({self._counter})" )
-        
+
+    def send_robotMarker(self):
+        self._robotMarker.color= colorPanel[ self._target ]
+        self._robotMarker.color.a= 1.0
+        self._markerPub.publish(self._robotMarker)
+
+    def send_areaMarker(self, color):
+        self._areaMarker.color= colorPanel[ color ]
+        self._areaMarker.color.a= 0.5
+        self._markerPub.publish(self._areaMarker)
+
     def color_callback(self, aMsg):
         print( f"< find: {aMsg.data}" )
         if aMsg.data == self._target :
@@ -39,30 +68,21 @@ class ColorManager():
                 self._target= random.choice( self._colors )
             self._counter+= 1
             print( f"> target: {self._target} ({self._counter})" )
+            self.send_robotMarker()
+        if aMsg.data in colorPanel :
+            self.send_areaMarker( aMsg.data )
 
-        marker= Marker()
-
-        marker.header.frame_id= "base_link"                        # header for time/frame information
-        marker.ns= "color"                            # Namespace to place this object in... used in conjunction with id to create a unique name for the object
-        marker.id= 0                           # object ID useful in conjunction with the namespace for manipulating and deleting the object later
-        marker.type= 3 #CYLINDER                         # Type of object
-        #marker.pose
-        marker.scale.x= 0.4
-        marker.scale.y= 0.4
-        marker.scale.z= 0.1
-        marker.color= colorPanel[self._target]
-        #duration lifetime                    # How long the object should last before being automatically deleted.  0 means forever
-        #bool frame_locked                    # If this marker should be frame-locked, i.e. retransformed into its frame every timestep
-
-        self._markerPub.publish(marker)
-
+    def pulse_callback(self):
+        self.send_robotMarker()
+    
     def process(self):
         # Ros double initialization
         rclpy.init()
         self._node = Node( f"color_manager" )
-        self._node.create_subscription( String, "color/status", self.color_callback, 10 )
         self._markerPub= self._node.create_publisher( Marker, "color/markers", 10 )
-
+        self._node.create_subscription( String, "color/status", self.color_callback, 10 )
+        self._node.create_timer(3.0, self.pulse_callback)
+        
         # Infinite loop:
         rclpy.spin(self._node)
 

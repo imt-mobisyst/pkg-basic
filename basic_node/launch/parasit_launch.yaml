@@ -1,4 +1,4 @@
 launch:
 - node:
-    pkg: "mb6_basic"
+    pkg: "basic_node"
     exec: "parasit"
