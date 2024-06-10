@@ -1,0 +1,23 @@
+launch:
+
+# Driver:
+- node:
+    pkg: joy
+    exec: joy_node
+
+# Control:
+- node: 
+    pkg: teleop_twist_joy
+    exec: teleop_node
+    param:
+      - 
+        name: "axis_linear.x"
+        value: 1
+      - 
+        name: "axis_angular.yaw"
+        value: 3
+      - 
+        name: "scale_angular.yaw"
+        value: 2.0
+    remap:
+     - {from: "cmd_vel", to: "/multi/cmd_teleop"}
