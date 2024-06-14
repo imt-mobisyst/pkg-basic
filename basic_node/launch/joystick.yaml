@@ -10,14 +10,9 @@ launch:
     pkg: teleop_twist_joy
     exec: teleop_node
     param:
-      - 
-        name: "axis_linear.x"
-        value: 1
-      - 
-        name: "axis_angular.yaw"
-        value: 3
-      - 
-        name: "scale_angular.yaw"
-        value: 2.0
+      - {name: "axis_linear.x", value: 1}
+      - {name: "scale_linear.x", value: 0.3}
+      - {name: "axis_angular.yaw",  value: 3}
+      - {name: "scale_angular.yaw", value: 2.0}
     remap:
-     - {from: "cmd_vel", to: "/multi/cmd_teleop"}
+     - {from: "cmd_vel", to: "multi/cmd_teleop"}
