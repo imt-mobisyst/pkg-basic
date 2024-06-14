@@ -20,7 +20,7 @@ def main(args=None):
 
 class Multiplexer(Node):
 
-    def __init__( self, MsgType= Twist, inTopics=['/multi/cmd_nav', '/multi/cmd_teleop'], outTopic='/cmd_vel' ):
+    def __init__( self, MsgType= Twist, inTopics=['multi/cmd_nav', 'multi/cmd_teleop'], outTopic='cmd_vel' ):
         super().__init__('multiplexer')
         callbacks= [
             self.cmd_1_callback, self.cmd_2_callback, self.cmd_3_callback, self.cmd_4_callback,

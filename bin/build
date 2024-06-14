@@ -8,6 +8,7 @@ cd ..
 echo "# Build $PROJECT (target: $PWD/install)"
 echo "#--------------------------------------------------------------------"
 
+colcon build --packages-select basic_msgs
 colcon build --base-paths $PROJECT
 
 # Debugs:
