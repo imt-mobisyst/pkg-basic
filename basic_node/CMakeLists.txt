@@ -31,10 +31,12 @@ install(DIRECTORY
 
 # Python scripts
 install( DIRECTORY scripts/basic DESTINATION lib/${PROJECT_NAME} )
+install( PROGRAMS scripts/color_race DESTINATION lib/${PROJECT_NAME} )
+install( PROGRAMS scripts/move_simple DESTINATION lib/${PROJECT_NAME} )
+install( PROGRAMS scripts/move_to DESTINATION lib/${PROJECT_NAME} )
 install( PROGRAMS scripts/multiplexer DESTINATION lib/${PROJECT_NAME} )
 install( PROGRAMS scripts/parasit DESTINATION lib/${PROJECT_NAME} )
 install( PROGRAMS scripts/pulse_monitor DESTINATION lib/${PROJECT_NAME} )
 install( PROGRAMS scripts/tf_snifer DESTINATION lib/${PROJECT_NAME} )
-install( PROGRAMS scripts/color_race DESTINATION lib/${PROJECT_NAME} )
 
 ament_package()

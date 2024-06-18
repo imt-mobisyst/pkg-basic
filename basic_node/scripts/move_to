@@ -1,0 +1,75 @@
+#!/usr/bin/python3
+
+import rclpy
+from rclpy.node import Node
+from geometry_msgs.msg import Twist
+
+import basic.move as bmove
+
+def main():
+    cman= RosTaxi()
+    cman.process()
+
+class RosTaxi() :
+    def __init__(self):
+        self._node= None
+        self._radar= None
+
+    def initControlProcess(self, pubTopic= 'obstacles' ):
+        self._vel_publisher= self._node.create_publisher( Twist, pubTopic, 10)
+        self._node.create_timer(0.02, self.simpleControl_callback )
+
+    # Callbacks:
+    def simpleControl_callback( self ):
+        points= self._radar.points()
+        # Security
+        if len( points ) == 0 :
+            print("empty")
+            return
+
+        # Interpretation
+        obstacleLeft= False
+        obstacleRight= False
+        for obs in points :
+            if 0.05 < obs.x and obs.x < 0.6 and -0.4 < obs.y and obs.y < 0.4 :
+                if obs.y < 0.0 :
+                    obstacleRight= True
+                else :
+                    obstacleLeft= True
+        
+        # Control
+        velo = Twist()
+        if obstacleLeft :
+            print("go right!")
+            velo.linear.x = 0.1 # target a 0.2 meter per second velocity
+            velo.angular.z= -1.0
+        elif obstacleRight :
+            print("go left!")
+            velo.linear.x = 0.1 # target a 0.2 meter per second velocity
+            velo.angular.z= 1.0
+        else :
+            print("Reach the goal ...")
+            velo.linear.x = 0.0 # target a 0.2 meter per second velocity
+        self._vel_publisher.publish(velo)
+
+    def process( self, args=None ):
+        # Initialize ROS and a ROS node
+        rclpy.init(args=args)
+        self._node= Node( 'basic_move' )
+
+        # Initialize Radar
+        self._radar= bmove.RosRadar( self._node )
+        self._radar.initScanProcess( 'scan', '/obstacles' )
+    
+        # Initialize Taxi
+        self.initControlProcess( 'multi/cmd_nav' )
+
+        # infinite Loop:
+        rclpy.spin( self._node )
+    
+        # clean end
+        self._node.destroy_node()
+        rclpy.shutdown()
+
+if __name__ == '__main__' :
+    main()
