@@ -95,7 +95,7 @@ class RosRadar():
             aPoint.z= zero
             self.obstacles.points.append( aPoint )
         
-        self._radar.printSample( printFct= self.rosNode.get_logger().info )
+        #self._radar.printSample( printFct= self.rosNode.get_logger().info )
         self._pc_publisher.publish( self.obstacles )
 
     # Accessors: 

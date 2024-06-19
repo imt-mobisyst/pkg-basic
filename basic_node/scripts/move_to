@@ -1,8 +1,9 @@
 #!/usr/bin/python3
 
-import rclpy
+import rclpy, tf2_ros, tf2_geometry_msgs
 from rclpy.node import Node
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import Pose, PoseStamped, Twist
+from visualization_msgs.msg import Marker
 
 import basic.move as bmove
 
@@ -14,11 +15,51 @@ class RosTaxi() :
     def __init__(self):
         self._node= None
         self._radar= None
+        self._goal= Pose()
+        self._state= 0
 
-    def initControlProcess(self, pubTopic= 'obstacles' ):
+        # Goal Marker
+        self._marker= Marker()
+        self._marker.header.frame_id= "base_link" 
+        self._marker.ns= "move"            # Namespace (Object ID group)
+        self._marker.id= 0                 # Object ID
+        self._marker.type= 3               # CYLINDER type Id.
+        self._marker.pose.position.z= 0.3
+        self._marker.scale.x= 0.02
+        self._marker.scale.y= 0.02
+        self._marker.scale.z= 0.6
+        self._marker.color.r= 1.0
+        self._marker.color.a= 0.4
+
+    def initControlProcess(self, pubTopic= 'obstacles', goalTopic= "goal" ):
         self._vel_publisher= self._node.create_publisher( Twist, pubTopic, 10)
         self._node.create_timer(0.02, self.simpleControl_callback )
+        self._node.create_subscription( PoseStamped, goalTopic, self.goal_callback, 10)
 
+    def process( self, args=None ):
+        # Initialize ROS and a ROS node
+        rclpy.init(args=args)
+        self._node= Node( 'basic_move' )
+        self._markerPub= self._node.create_publisher( Marker, "move/markers", 10 )
+
+        # Transform tool:
+        self.tf_buffer = tf2_ros.Buffer()
+        self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self._node)
+
+        # Initialize Radar
+        self._radar= bmove.RosRadar( self._node )
+        self._radar.initScanProcess( 'scan', '/obstacles' )
+
+        # Initialize Taxi
+        self.initControlProcess( 'multi/cmd_nav', 'goal' )
+
+        # infinite Loop:
+        rclpy.spin( self._node )
+    
+        # clean end
+        self._node.destroy_node()
+        rclpy.shutdown()
+    
     # Callbacks:
     def simpleControl_callback( self ):
         points= self._radar.points()
@@ -27,7 +68,7 @@ class RosTaxi() :
             print("empty")
             return
 
-        # Interpretation
+        # Obstacles Interpretation
         obstacleLeft= False
         obstacleRight= False
         for obs in points :
@@ -36,40 +77,96 @@ class RosTaxi() :
                     obstacleRight= True
                 else :
                     obstacleLeft= True
+
+        # Local Goal:
+        localGoal= Pose()
+        transform= self.getTransform( 'odom', 'base_link' )
+        if transform :
+            localGoal = tf2_geometry_msgs.do_transform_pose( self._goal, transform )
+        localDist2= localGoal.position.x*localGoal.position.x +  localGoal.position.y*localGoal.position.y
+
+        #print(localGoal.position)
+
+        self._marker.pose= localGoal
+        self._marker.pose.position.z+= 0.3
+        self._markerPub.publish( self._marker )
+
+        # State
+        STOP= 0
+        GO= 1
+        RIGHT= 2
+        LEFT= 3
+        state= STOP
+        if obstacleLeft :
+            #print("Obs Left!")
+            state= RIGHT
+        elif obstacleRight :
+            #print("Obs Right!")
+            state= LEFT
+        elif localDist2 < 0.04 :
+            #print("On Goal!")
+            state= STOP
+        elif localGoal.position.x < 0.0 :
+            #print("In the back!")
+            if self._state == RIGHT :
+                state= RIGHT
+            else :
+                state= LEFT
+        elif localGoal.position.y > localGoal.position.x*0.5 :
+                #print("Goal Left!")
+                state= LEFT
+        elif localGoal.position.y < localGoal.position.x*-0.5  :
+                #print("Goal Right!")
+                state= RIGHT
+        else: 
+            state= GO
         
         # Control
         velo = Twist()
-        if obstacleLeft :
-            print("go right!")
+        if state == RIGHT :
+            #print("go right!")
             velo.linear.x = 0.1 # target a 0.2 meter per second velocity
             velo.angular.z= -1.0
-        elif obstacleRight :
-            print("go left!")
+        elif state == LEFT :
+            #print("go left!")
             velo.linear.x = 0.1 # target a 0.2 meter per second velocity
             velo.angular.z= 1.0
-        else :
-            print("Reach the goal ...")
-            velo.linear.x = 0.0 # target a 0.2 meter per second velocity
+        elif state == GO :
+            #print("Go ...")
+            velo.linear.x = 0.2 # target a 0.2 meter per second velocity
         self._vel_publisher.publish(velo)
+        self._state= state
 
-    def process( self, args=None ):
-        # Initialize ROS and a ROS node
-        rclpy.init(args=args)
-        self._node= Node( 'basic_move' )
+    def getTransform( self, frame_from, frame_to ):
+        # Get Transformation
+        try:
+            return self.tf_buffer.lookup_transform(
+                        frame_to,
+                        frame_from,
+                        rclpy.time.Time() )
+        except tf2_ros.TransformException as transEx:
+            print( f"tf: {frame_from} -> {frame_to} : IMPOSBLE\n\t > {transEx}" )
+            return False
 
-        # Initialize Radar
-        self._radar= bmove.RosRadar( self._node )
-        self._radar.initScanProcess( 'scan', '/obstacles' )
-    
-        # Initialize Taxi
-        self.initControlProcess( 'multi/cmd_nav' )
 
-        # infinite Loop:
-        rclpy.spin( self._node )
-    
-        # clean end
-        self._node.destroy_node()
-        rclpy.shutdown()
+    def getTransform( self, frame_from, frame_to ):
+        # Get Transformation
+        try:
+            return self.tf_buffer.lookup_transform(
+                        frame_to,
+                        frame_from,
+                        rclpy.time.Time() )
+        except tf2_ros.TransformException as transEx:
+            print( f"tf: {frame_from} -> {frame_to} : IMPOSBLE\n\t > {transEx}" )
+            return False
+
+    def goal_callback( self, goalMsg ):
+        print( f"> {goalMsg.pose.position} in {goalMsg.header.frame_id}" )
+        transform= self.getTransform( goalMsg.header.frame_id, 'odom' )
+        if transform :
+            self._goal = tf2_geometry_msgs.do_transform_pose( goalMsg.pose, transform )          
+            print( f"< {self._goal}" )
+
 
 if __name__ == '__main__' :
     main()
