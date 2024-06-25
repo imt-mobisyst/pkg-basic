@@ -20,7 +20,7 @@ class RosTaxi() :
 
         # Goal Marker
         self._marker= Marker()
-        self._marker.header.frame_id= "base_link" 
+        self._marker.header.frame_id= "base_link" # Will be replaced later
         self._marker.ns= "move"            # Namespace (Object ID group)
         self._marker.id= 0                 # Object ID
         self._marker.type= 3               # CYLINDER type Id.
@@ -41,6 +41,12 @@ class RosTaxi() :
         rclpy.init(args=args)
         self._node= Node( 'basic_move' )
         self._markerPub= self._node.create_publisher( Marker, "move/markers", 10 )
+
+        # Node parameters
+        self._node.declare_parameter('from_frame', 'odom')
+        self._node.declare_parameter('to_frame', 'base_link')
+
+        self._marker.header.frame_id = self.paramString('to_frame')
 
         # Transform tool:
         self.tf_buffer = tf2_ros.Buffer()
@@ -80,7 +86,11 @@ class RosTaxi() :
 
         # Local Goal:
         localGoal= Pose()
-        transform= self.getTransform( 'odom', 'base_link' )
+
+        frame_from = self.paramString('from_frame')
+        frame_to   = self.paramString('to_frame')
+        transform  = self.getTransform( frame_from, frame_to )
+
         if transform :
             localGoal = tf2_geometry_msgs.do_transform_pose( self._goal, transform )
         localDist2= localGoal.position.x*localGoal.position.x +  localGoal.position.y*localGoal.position.y
@@ -150,10 +160,14 @@ class RosTaxi() :
 
     def goal_callback( self, goalMsg ):
         print( f"> {goalMsg.pose.position} in {goalMsg.header.frame_id}" )
-        transform= self.getTransform( goalMsg.header.frame_id, 'odom' )
+        transform= self.getTransform( goalMsg.header.frame_id, self.paramString('from_frame') )
         if transform :
             self._goal = tf2_geometry_msgs.do_transform_pose( goalMsg.pose, transform )          
             print( f"< {self._goal}" )
+
+
+    def paramString(self, name):
+        return self._node.get_parameter(name).get_parameter_value().string_value
 
 if __name__ == '__main__' :
     main()
