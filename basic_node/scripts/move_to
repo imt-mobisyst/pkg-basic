@@ -148,25 +148,12 @@ class RosTaxi() :
             print( f"tf: {frame_from} -> {frame_to} : IMPOSBLE\n\t > {transEx}" )
             return False
 
-
-    def getTransform( self, frame_from, frame_to ):
-        # Get Transformation
-        try:
-            return self.tf_buffer.lookup_transform(
-                        frame_to,
-                        frame_from,
-                        rclpy.time.Time() )
-        except tf2_ros.TransformException as transEx:
-            print( f"tf: {frame_from} -> {frame_to} : IMPOSBLE\n\t > {transEx}" )
-            return False
-
     def goal_callback( self, goalMsg ):
         print( f"> {goalMsg.pose.position} in {goalMsg.header.frame_id}" )
         transform= self.getTransform( goalMsg.header.frame_id, 'odom' )
         if transform :
             self._goal = tf2_geometry_msgs.do_transform_pose( goalMsg.pose, transform )          
             print( f"< {self._goal}" )
-
 
 if __name__ == '__main__' :
     main()
