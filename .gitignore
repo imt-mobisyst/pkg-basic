@@ -1,0 +1,84 @@
+# Light Submodules
+#-----------------
+ovh-*
+pkg-basic
+pkg-maraubot
+pkg-multibot
+pkg-robulab
+pkg-stage
+pkg-tbot
+pkg-tsim
+pkg-toons
+pkg-viscene
+
+# Local config:
+#-----------------
+config.toml
+patches
+
+# System
+#-----------------
+*.log
+.vscode
+build/
+install/
+log/
+lost+found
+*~
+~*
+
+# Large media files
+#-----------------
+*.mp4
+*.tiff
+*.avi
+*.flv
+*.mov
+*.wmv
+
+# Latex:
+#-----------------
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.pdf
+*.run.xml
+*.spl
+*.synctex.gz
+*.tex~
+
+
+# python:
+#-----------------
+*.pyc
+__pycache__/
+
+
+# c/c++:
+#-----------------
+*.o
+
+
+# Java:
+#-----------------
+*.class
+*.jar
+
+
+# pharo:
+#-----------------
+pharo
+pharo-ui
+pharo-vm
+pharo-local
+PharoDebug.log
+*.sources
+*.changes
+
+
+

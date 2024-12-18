@@ -25,7 +25,7 @@ endif()
 
 # Install resources files.
 install(DIRECTORY
-  launch rviz
+  launch rviz world
   DESTINATION share/${PROJECT_NAME}/
 )
 

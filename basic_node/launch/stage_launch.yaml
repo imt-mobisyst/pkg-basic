@@ -1,0 +1,15 @@
+launch:
+
+- arg:
+    name: "world"
+    default: "$(find-pkg-share basic_node)/world/basic.world"
+
+- node: 
+    pkg: stage_ros2
+    exec: stage_ros2
+    name: stage
+    param:
+    - { name: "use_static_transformations", value: true }
+    -
+      name: "world_file"
+      value: "$(var world)"
