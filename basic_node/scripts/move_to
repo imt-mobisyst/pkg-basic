@@ -11,6 +11,9 @@ def main():
     cman= RosTaxi()
     cman.process()
 
+# To send a goal : 
+# ros2 topic pub --once /goal geometry_msgs/msg/PoseStamped "{header: {frame_id:  'base_frame'}, pose: {position: {x: 1.0, y: 0.0, z: 0.0}}}"
+
 class RosTaxi() :
     def __init__(self):
         self._node= None
@@ -33,7 +36,9 @@ class RosTaxi() :
 
     def initControlProcess(self, pubTopic= 'obstacles', goalTopic= "goal" ):
         self._vel_publisher= self._node.create_publisher( Twist, pubTopic, 10)
-        self._node.create_timer(0.02, self.simpleControl_callback )
+        self._looptimer= self._node.create_timer(0.02, self.simpleControl_callback )
+        self._looptimer.cancel()
+        self._sleeptimer= self._node.create_timer(30.0, self.sleep_callback )
         self._node.create_subscription( PoseStamped, goalTopic, self.goal_callback, 10)
 
     def process( self, args=None ):
@@ -69,9 +74,10 @@ class RosTaxi() :
     # Callbacks:
     def simpleControl_callback( self ):
         points= self._radar.points()
+
         # Security
         if len( points ) == 0 :
-            print("empty")
+            print("No Scan....")
             return
 
         # Obstacles Interpretation
@@ -157,6 +163,10 @@ class RosTaxi() :
         except tf2_ros.TransformException as transEx:
             print( f"tf: {frame_from} -> {frame_to} : IMPOSBLE\n\t > {transEx}" )
             return False
+    
+    def sleep_callback( self ):
+        self._looptimer.cancel()
+        print( "Move To Sleeping ..." )
 
     def goal_callback( self, goalMsg ):
         print( f"> {goalMsg.pose.position} in {goalMsg.header.frame_id}" )
@@ -164,7 +174,9 @@ class RosTaxi() :
         if transform :
             self._goal = tf2_geometry_msgs.do_transform_pose( goalMsg.pose, transform )          
             print( f"< {self._goal}" )
-
+        # Reset the callback:
+        self._looptimer.reset()
+        self._sleeptimer.reset()
 
     def paramString(self, name):
         return self._node.get_parameter(name).get_parameter_value().string_value
