@@ -122,6 +122,7 @@ class RosTaxi() :
         elif localDist2 < 0.04 :
             #print("On Goal!")
             state= STOP
+            self._looptimer.cancel()
         elif localGoal.position.x < 0.0 :
             #print("In the back!")
             if self._state == RIGHT :
@@ -166,7 +167,7 @@ class RosTaxi() :
     
     def sleep_callback( self ):
         self._looptimer.cancel()
-        print( "Move To Sleeping ..." )
+        print( "Sleeping ..." )
 
     def goal_callback( self, goalMsg ):
         print( f"> {goalMsg.pose.position} in {goalMsg.header.frame_id}" )
