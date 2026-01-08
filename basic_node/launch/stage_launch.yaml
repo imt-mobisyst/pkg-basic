@@ -3,7 +3,7 @@ launch:
 - arg:
     name: "world"
     default: "$(find-pkg-share basic_node)/world/basic.world"
-
+ 
 - node: 
     pkg: stage_ros2
     exec: stage_ros2

@@ -2,6 +2,7 @@
 import os, rclpy
 from rclpy.node import Node
 from basic_msgs.msg import Pulse
+
 def main():
     monitor= Basic()
     monitor.process()
@@ -76,7 +77,7 @@ class Basic():
         # Ros initialization
         rclpy.init(domain_id= 100)
         self._node = Node( f"pulse_monitor" )
-        self._timer = self._node.create_timer( 0.05, self.monitor_callback )
+        self._timer = self._node.create_timer( 0.1, self.monitor_callback )
         self._node.create_subscription( Pulse, "pulse", self.pulse_callback, 10 )
         # Infinite loop:
         rclpy.spin(self._node)
