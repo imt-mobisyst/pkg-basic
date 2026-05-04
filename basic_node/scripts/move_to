@@ -34,7 +34,7 @@ class RosTaxi() :
         self._marker.color.r= 1.0
         self._marker.color.a= 0.4
 
-    def initControlProcess(self, pubTopic= 'obstacles', goalTopic= "goal" ):
+    def initControlProcess(self, pubTopic, goalTopic ):
         self._vel_publisher= self._node.create_publisher( Twist, pubTopic, 10)
         self._looptimer= self._node.create_timer(0.02, self.simpleControl_callback )
         self._looptimer.cancel()
@@ -62,7 +62,7 @@ class RosTaxi() :
         self._radar.initScanProcess( 'scan', '/obstacles' )
 
         # Initialize Taxi
-        self.initControlProcess( 'multi/cmd_nav', 'goal' )
+        self.initControlProcess( 'multi/cmd_nav', 'goal_pose' )
 
         # infinite Loop:
         rclpy.spin( self._node )
