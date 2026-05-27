@@ -52,7 +52,7 @@ class RosProcess():
         )
 
         self._node.create_subscription( TFMessage, "tf_static", self.tf_callback, qos)
-        self._tfstaticPub= self._node.create_publisher( TFMessage, "tf_static", qos )
+        self._tfstaticPub= self._node.create_publisher( TFMessage, "tf", 10 )
 
         # Infinite loop:
         rclpy.spin(self._node)
