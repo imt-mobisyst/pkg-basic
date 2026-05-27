@@ -1,0 +1,58 @@
+#!/usr/bin/python3
+import os, rclpy, tf2_ros
+from rclpy.node import Node
+from tf2_msgs.msg import TFMessage
+
+def main():
+    proc= RosProcess()
+    proc.go()
+
+class RosProcess():
+
+    def __init__(self):
+        self._node= None
+        self._tfs= {}
+    
+    def tf_callback(self, tfmsg):
+        
+        #Header header
+        #string child_frame_id # the frame id of the child frame
+        #Transform transform
+        for t in tfmsg.transforms :
+            self.update( t.header.frame_id, t.child_frame_id, t )
+
+    def update( self, frameFrom, frameTo, tfmsg ):
+        if frameFrom not in self._tfs:
+            self._tfs[frameFrom]= {}
+        
+        self._tfs[frameFrom][frameTo]= tfmsg
+        
+        if frameTo in self._tfs and frameFrom in self._tfs[frameTo] :
+            self._tfs[frameTo].pop(frameFrom)
+
+    def routine(self):
+        counter= 0
+        tfmsg= TFMessage()
+        for frameFrom in self._tfs :
+            for frameTo in self._tfs[frameFrom] :
+                tfmsg.transforms.append( self._tfs[frameFrom][frameTo] )
+                counter+= 1
+        if counter > 0 :
+            self._tfstaticPub.publish( tfmsg )
+    
+    def go(self):
+        # Ros initialization
+        rclpy.init()
+        self._node = Node( f"tfstatic_repeater" )
+        self._timer = self._node.create_timer( 10.0, self.routine )
+        self._node.create_subscription( TFMessage, "tf_static", self.tf_callback, 10)
+        self._tfstaticPub= self._node.create_publisher( TFMessage, "tf_static", 10 )
+
+        # Infinite loop:
+        rclpy.spin(self._node)
+
+        # Clean stop:
+        self._node.destroy_node()
+
+if __name__ == '__main__':
+    main()
