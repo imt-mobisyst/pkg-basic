@@ -45,8 +45,14 @@ class RosProcess():
         rclpy.init()
         self._node = Node( f"tfstatic_repeater" )
         self._timer = self._node.create_timer( 10.0, self.routine )
-        self._node.create_subscription( TFMessage, "tf_static", self.tf_callback, 10)
-        self._tfstaticPub= self._node.create_publisher( TFMessage, "tf_static", 10 )
+        
+        qos= rclpy.qos.QoSProfile(
+            durability= rclpy.qos.DurabilityPolicy.TRANSIENT_LOCAL,
+            depth=100
+        )
+
+        self._node.create_subscription( TFMessage, "tf_static", self.tf_callback, qos)
+        self._tfstaticPub= self._node.create_publisher( TFMessage, "tf_static", qos )
 
         # Infinite loop:
         rclpy.spin(self._node)
