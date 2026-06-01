@@ -36,9 +36,8 @@ launch:
     exec: "multiplexer"
     name: "multiplexer"
     remap:
-    -
-        from: "cmd_vel"
-        to: "commands/velocity"
+    - {from: "/cmd_simple_vel", to: "/commands/velocity"}
+
 - node:
     pkg: "basic_node"
     exec: "move_to"
