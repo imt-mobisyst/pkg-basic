@@ -32,19 +32,25 @@ class RosProcess():
 
     def routine(self):
         counter= 0
+        print( "--- TF Repeater ---" )
         tfmsg= TFMessage()
+        infos= []
+        nowStamp= self._node.get_clock().now().to_msg()
         for frameFrom in self._tfs :
             for frameTo in self._tfs[frameFrom] :
-                tfmsg.transforms.append( self._tfs[frameFrom][frameTo] )
+                transform= self._tfs[frameFrom][frameTo]
+                transform.header.stamp= nowStamp
+                tfmsg.transforms.append(transform)
+                infos.append( f"{frameFrom}->{frameTo}" )
                 counter+= 1
         if counter > 0 :
+            print( "  - "+ ', '.join(infos) )
             self._tfstaticPub.publish( tfmsg )
     
     def go(self):
         # Ros initialization
         rclpy.init()
-        self._node = Node( f"tfstatic_repeater" )
-        self._timer = self._node.create_timer( 10.0, self.routine )
+        self._node = Node( f"tf_repeater" )
         
         qos= rclpy.qos.QoSProfile(
             durability= rclpy.qos.DurabilityPolicy.TRANSIENT_LOCAL,
@@ -53,6 +59,8 @@ class RosProcess():
 
         self._node.create_subscription( TFMessage, "tf_static", self.tf_callback, qos)
         self._tfstaticPub= self._node.create_publisher( TFMessage, "tf", 10 )
+
+        self._timer = self._node.create_timer( 2.4, self.routine )
 
         # Infinite loop:
         rclpy.spin(self._node)
