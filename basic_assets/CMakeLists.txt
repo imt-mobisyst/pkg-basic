@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(basic_node)
+project(basic_assets)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -9,7 +9,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.
-find_package(basic_msgs REQUIRED)
+# find_package(<dependency> REQUIRED)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -23,22 +23,12 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
+
 # Install resources files.
 install(DIRECTORY
-  launch rviz world
+  launch map
   DESTINATION share/${PROJECT_NAME}/
 )
 
-# Python scripts
-install( DIRECTORY scripts/basic DESTINATION lib/${PROJECT_NAME} )
-install( PROGRAMS scripts/color_race DESTINATION lib/${PROJECT_NAME} )
-install( PROGRAMS scripts/map_server DESTINATION lib/${PROJECT_NAME} )
-install( PROGRAMS scripts/move_simple DESTINATION lib/${PROJECT_NAME} )
-install( PROGRAMS scripts/move_to DESTINATION lib/${PROJECT_NAME} )
-install( PROGRAMS scripts/multiplexer DESTINATION lib/${PROJECT_NAME} )
-install( PROGRAMS scripts/parasit DESTINATION lib/${PROJECT_NAME} )
-install( PROGRAMS scripts/pulse_monitor DESTINATION lib/${PROJECT_NAME} )
-install( PROGRAMS scripts/tf_snifer DESTINATION lib/${PROJECT_NAME} )
-install( PROGRAMS scripts/tf_repeater DESTINATION lib/${PROJECT_NAME} )
 
 ament_package()
